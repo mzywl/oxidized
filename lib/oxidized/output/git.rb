@@ -15,6 +15,18 @@ module Oxidized
       def initialize
         super
         @cfg = Oxidized.config.output.git
+        # Lazy-load File output for dual git+file backup
+        @file_output = nil
+      end
+
+      def file_output
+        return @file_output if @file_output
+
+        @file_output ||= (Oxidized.mgr.output['file'] || Oxidized.mgr.add_output('file'))['file']
+        @file_output.setup
+        @file_output
+      rescue OxidizedError
+        nil
       end
 
       def setup
@@ -69,6 +81,12 @@ module Oxidized
         end
 
         update repo, file, outputs.to_cfg unless opt[:significant_changes] == false
+
+        # Also write to File output (git-primary, file-secondary)
+        # This enables dual output with a single login: git + file backup
+        if (fo = file_output)
+          fo.store(file, outputs, opt)
+        end
       end
 
       # Returns the configuration of group/node_name
