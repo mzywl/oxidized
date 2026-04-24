@@ -22,12 +22,15 @@ module Oxidized
       def file_output
         return @file_output if @file_output
 
-        klass = Oxidized.mgr.output['file'] || Oxidized.mgr.add_output('file')
-        @file_output = klass['file'].new
-        @file_output.setup
-        @file_output
-      rescue OxidizedError
-        nil
+        begin
+          klass = Oxidized.mgr.output['file'] || Oxidized.mgr.add_output('file')
+          @file_output = klass['file'].new
+          @file_output.setup
+          @file_output
+        rescue StandardError => e
+          logger.warn "Could not initialize File output: #{e.class} - #{e.message}"
+          nil
+        end
       end
 
       def setup
@@ -85,8 +88,12 @@ module Oxidized
 
         # Also write to File output (git-primary, file-secondary)
         # This enables dual output with a single login: git + file backup
-        if (fo = file_output)
-          fo.store(file, outputs, opt)
+        begin
+          if (fo = file_output)
+            fo.store(file, outputs, opt)
+          end
+        rescue StandardError => e
+          logger.warn "Failed to write File output: #{e.class} - #{e.message}"
         end
       end
 
