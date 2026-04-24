@@ -22,7 +22,8 @@ module Oxidized
       def file_output
         return @file_output if @file_output
 
-        @file_output ||= (Oxidized.mgr.output['file'] || Oxidized.mgr.add_output('file'))['file']
+        klass = Oxidized.mgr.output['file'] || Oxidized.mgr.add_output('file')
+        @file_output = klass['file'].new
         @file_output.setup
         @file_output
       rescue OxidizedError
