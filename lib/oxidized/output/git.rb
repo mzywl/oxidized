@@ -24,7 +24,8 @@ module Oxidized
 
         begin
           klass = Oxidized.mgr.output['file'] || Oxidized.mgr.add_output('file')
-          @file_output = klass['file'].new
+          # mgr.output['file'] IS the class directly (not a hash)
+          @file_output = klass.new
           @file_output.setup
           @file_output
         rescue StandardError => e
